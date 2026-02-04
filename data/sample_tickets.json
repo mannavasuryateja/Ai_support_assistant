@@ -1,0 +1,57 @@
+[
+  {
+    "id": "ticket_006",
+    "title": "Email notifications not working",
+    "description": "User is not receiving email notifications for important updates and messages.",
+    "category": "notifications",
+    "status": "resolved",
+    "resolution": "Email was in spam folder. Added domain to whitelist.",
+    "priority": "medium",
+    "created_at": "2024-01-15T10:30:00Z",
+    "resolved_at": "2024-01-15T11:45:00Z"
+  },
+  {
+    "id": "ticket_007",
+    "title": "Unable to upload files",
+    "description": "File upload feature is not working. Getting error 'file too large' even for small files.",
+    "category": "technical",
+    "status": "resolved",
+    "resolution": "Browser cache issue. Cleared cache and cookies resolved the problem.",
+    "priority": "medium",
+    "created_at": "2024-01-16T14:20:00Z",
+    "resolved_at": "2024-01-16T15:10:00Z"
+  },
+  {
+    "id": "ticket_008",
+    "title": "Account locked after multiple login attempts",
+    "description": "User account got locked after entering wrong password multiple times.",
+    "category": "authentication",
+    "status": "resolved",
+    "resolution": "Account unlocked by admin. User advised to use password manager.",
+    "priority": "high",
+    "created_at": "2024-01-17T09:15:00Z",
+    "resolved_at": "2024-01-17T09:30:00Z"
+  },
+  {
+    "id": "ticket_009",
+    "title": "Billing address update not saving",
+    "description": "User cannot update billing address in account settings. Changes are not being saved.",
+    "category": "billing",
+    "status": "resolved",
+    "resolution": "Database validation error. Fixed validation rules for international addresses.",
+    "priority": "medium",
+    "created_at": "2024-01-18T16:45:00Z",
+    "resolved_at": "2024-01-19T10:20:00Z"
+  },
+  {
+    "id": "ticket_010",
+    "title": "Search function returning no results",
+    "description": "Search feature is not working properly. Returns no results even for exact matches.",
+    "category": "technical",
+    "status": "resolved",
+    "resolution": "Search index was corrupted. Rebuilt search index and functionality restored.",
+    "priority": "high",
+    "created_at": "2024-01-20T11:30:00Z",
+    "resolved_at": "2024-01-20T14:15:00Z"
+  }
+]

@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  support-assistant:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - ENDEE_URL=http://endee:8080
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ENDEE_API_KEY=${ENDEE_API_KEY}
+    depends_on:
+      - endee
+    volumes:
+      - ./data:/app/data
+
+  endee:
+    image: endee/endee:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - ENDEE_DATA_PATH=/data
+    volumes:
+      - endee_data:/data
+
+volumes:
+  endee_data:
