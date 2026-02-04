@@ -463,7 +463,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Documentation**: [docs.endee.io](https://docs.endee.io)
 - **Issues**: GitHub Issues
 - **Discussions**: GitHub Discussions
-- **Email**: support@yourproject.com
+- **Email**: suryatejamannava@gmail.com
+- 
 
 ---
 
