@@ -1,13 +1,10 @@
-"""
-Pydantic models for API request/response validation
-"""
 
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 class SupportTicket(BaseModel):
-    """Model for support ticket data."""
+    
     id: Optional[str] = Field(None, description="Unique ticket identifier")
     title: str = Field(..., description="Ticket title/subject")
     description: str = Field(..., description="Detailed description of the issue")
@@ -30,7 +27,7 @@ class SupportTicket(BaseModel):
         }
 
 class QueryRequest(BaseModel):
-    """Model for support query requests."""
+    
     query: str = Field(..., description="User's support query", min_length=1)
     category: Optional[str] = Field(None, description="Optional category filter")
     max_results: Optional[int] = Field(5, description="Maximum number of similar tickets to return", ge=1, le=20)
@@ -46,13 +43,13 @@ class QueryRequest(BaseModel):
         }
 
 class SimilarTicket(BaseModel):
-    """Model for similar ticket results."""
+    
     id: str = Field(..., description="Ticket identifier")
     score: float = Field(..., description="Similarity score (0-1)")
     metadata: Dict[str, Any] = Field(..., description="Ticket metadata")
 
 class QueryResponse(BaseModel):
-    """Model for support query responses."""
+    
     action: str = Field(..., description="Response action type (solution, clarification, escalation)")
     response: str = Field(..., description="AI-generated response text")
     confidence: float = Field(..., description="Response confidence score (0-1)")
@@ -100,7 +97,7 @@ class TicketInsertRequest(BaseModel):
         }
 
 class TicketInsertResponse(BaseModel):
-    """Model for ticket insertion response."""
+    
     success: bool = Field(..., description="Overall operation success")
     inserted_count: int = Field(..., description="Number of successfully inserted tickets")
     failed_count: int = Field(..., description="Number of failed insertions")
@@ -119,7 +116,7 @@ class TicketInsertResponse(BaseModel):
         }
 
 class HealthResponse(BaseModel):
-    """Model for system health check response."""
+    
     status: str = Field(..., description="Overall system status (healthy, unhealthy, error)")
     endee_connected: bool = Field(..., description="Endee database connection status")
     vector_store: str = Field(..., description="Vector store type (Endee, Local)")
@@ -143,7 +140,7 @@ class HealthResponse(BaseModel):
         }
 
 class SystemStats(BaseModel):
-    """Model for detailed system statistics."""
+    
     initialized: bool = Field(..., description="System initialization status")
     using_endee: bool = Field(..., description="Whether Endee is being used")
     vector_store: str = Field(..., description="Vector store type")
@@ -172,7 +169,7 @@ class SystemStats(BaseModel):
         }
 
 class ErrorResponse(BaseModel):
-    """Model for error responses."""
+    
     error: str = Field(..., description="Error message")
     detail: Optional[str] = Field(None, description="Detailed error information")
     timestamp: str = Field(default_factory=lambda: datetime.now().isoformat(), description="Error timestamp")
