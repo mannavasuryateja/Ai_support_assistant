@@ -1,105 +1,106 @@
+
 import numpy as np
-import pickle
-import os
-from typing import List, Dict, Any
-from sklearn.metrics.pairwise import cosine_similarity
+from typing import List, Dict, Any, Optional
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class LocalVectorStore:
-    """Local vector storage for demo mode when Endee is not available."""
     
-    def __init__(self, collection_name: str):
+
+    def __init__(self, collection_name: str = "support_tickets"):
         self.collection_name = collection_name
-        self.storage_path = f"data/{collection_name}_vectors.pkl"
-        self.vectors = self._load_vectors()
+        # { vector_id: {"vector": np.ndarray, "metadata": dict} }
+        self._store: Dict[str, Dict[str, Any]] = {}
+        logger.info("🗄️  LocalVectorStore initialised (collection='%s')", collection_name)
+
     
-    def _load_vectors(self) -> Dict[str, Any]:
-        """Load vectors from local storage."""
-        if os.path.exists(self.storage_path):
-            try:
-                with open(self.storage_path, 'rb') as f:
-                    return pickle.load(f)
-            except Exception as e:
-                print(f"Error loading vectors: {e}")
-        return {"vectors": [], "metadata": [], "ids": []}
+
+    def health_check(self) -> bool:
+        """Always healthy — it's in-memory."""
+        return True
+
+    def collection_exists(self) -> bool:
+        return True   # always exists (it's just a dict)
+
+    def create_collection(self, dimension: int = None) -> bool:
+        logger.info("✅ LocalVectorStore: collection '%s' ready", self.collection_name)
+        return True
+
     
-    def _save_vectors(self):
-        """Save vectors to local storage."""
-        os.makedirs(os.path.dirname(self.storage_path), exist_ok=True)
+
+    def insert_vector(self, vector_id: str, embedding: np.ndarray,
+                      metadata: Dict[str, Any]) -> bool:
         try:
-            with open(self.storage_path, 'wb') as f:
-                pickle.dump(self.vectors, f)
-        except Exception as e:
-            print(f"Error saving vectors: {e}")
-    
-    def insert_vector(self, vector_id: str, embedding: np.ndarray, metadata: Dict[str, Any]) -> bool:
-        """Insert a vector with metadata."""
-        try:
-            # Check if vector already exists
-            if vector_id in self.vectors["ids"]:
-                # Update existing vector
-                idx = self.vectors["ids"].index(vector_id)
-                self.vectors["vectors"][idx] = embedding.tolist()
-                self.vectors["metadata"][idx] = metadata
-            else:
-                # Add new vector
-                self.vectors["vectors"].append(embedding.tolist())
-                self.vectors["metadata"].append(metadata)
-                self.vectors["ids"].append(vector_id)
-            
-            self._save_vectors()
+            vec = np.array(embedding, dtype=np.float32)
+            # Normalise once at insert time — speeds up cosine search
+            norm = np.linalg.norm(vec)
+            if norm > 0:
+                vec = vec / norm
+            self._store[vector_id] = {"vector": vec, "metadata": metadata}
+            logger.debug("✅ LocalVectorStore: inserted '%s'", vector_id)
             return True
         except Exception as e:
-            print(f"Error inserting vector: {e}")
+            logger.error("❌ LocalVectorStore insert_vector error: %s", e)
             return False
-    
-    def search_similar(self, query_vector: np.ndarray, top_k: int = 5) -> List[Dict[str, Any]]:
-        """Search for similar vectors."""
-        if not self.vectors["vectors"]:
+
+    def insert_vectors(self, vectors: List[Dict[str, Any]]) -> bool:
+        success = sum(
+            1 for v in vectors
+            if self.insert_vector(
+                v["id"],
+                np.array(v["vector"]),
+                v.get("metadata", {})
+            )
+        )
+        return success == len(vectors)
+
+    # ------------------------------------------------------------------ read
+
+    def search_similar(self, query_vector: np.ndarray,
+                       top_k: int = 5) -> List[Dict[str, Any]]:
+        if not self._store:
             return []
-        
+
         try:
-            # Convert stored vectors to numpy array
-            stored_vectors = np.array(self.vectors["vectors"])
-            
-            # Calculate cosine similarity
-            similarities = cosine_similarity([query_vector], stored_vectors)[0]
-            
-            # Get top k results
-            top_indices = np.argsort(similarities)[::-1][:top_k]
-            
-            results = []
-            for idx in top_indices:
-                if similarities[idx] > 0:  # Only return positive similarities
-                    results.append({
-                        "id": self.vectors["ids"][idx],
-                        "score": float(similarities[idx]),
-                        "metadata": self.vectors["metadata"][idx]
-                    })
-            
+            qvec = np.array(query_vector, dtype=np.float32)
+            qnorm = np.linalg.norm(qvec)
+            if qnorm > 0:
+                qvec = qvec / qnorm
+
+            scored = []
+            for vid, entry in self._store.items():
+                # Vectors are pre-normalised, so dot product == cosine similarity
+                score = float(np.dot(qvec, entry["vector"]))
+                scored.append({
+                    "id":       vid,
+                    "score":    score,
+                    "metadata": entry["metadata"],
+                })
+
+            scored.sort(key=lambda x: x["score"], reverse=True)
+            results = scored[:top_k]
+            logger.info("✅ LocalVectorStore: found %d results", len(results))
             return results
+
         except Exception as e:
-            print(f"Error searching vectors: {e}")
+            logger.error("❌ LocalVectorStore search_similar error: %s", e)
             return []
+
     
+
     def delete_vector(self, vector_id: str) -> bool:
-        """Delete a vector."""
-        try:
-            if vector_id in self.vectors["ids"]:
-                idx = self.vectors["ids"].index(vector_id)
-                del self.vectors["vectors"][idx]
-                del self.vectors["metadata"][idx]
-                del self.vectors["ids"][idx]
-                self._save_vectors()
-                return True
-            return False
-        except Exception as e:
-            print(f"Error deleting vector: {e}")
-            return False
+        removed = self._store.pop(vector_id, None)
+        if removed:
+            logger.info("✅ LocalVectorStore: deleted '%s'", vector_id)
+        return True   # idempotent
+
     
-    def collection_exists(self) -> bool:
-        """Check if collection exists (always true for local storage)."""
-        return True
-    
-    def create_collection(self, dimension: int = None) -> bool:
-        """Create collection (always succeeds for local storage)."""
-        return True
+
+    def get_stats(self) -> Dict[str, Any]:
+        return {
+            "backend":    "local_memory",
+            "collection": self.collection_name,
+            "count":      len(self._store),
+        }
