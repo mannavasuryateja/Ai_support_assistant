@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""
-Setup script for the AI-Powered Support Assistant.
-This script helps with initial setup and configuration.
-"""
+
 
 import os
 import sys
@@ -114,32 +111,31 @@ def test_imports():
         return False
 
 def main():
-    """Run the setup process."""
+    
     print("AI-Powered Support Assistant Setup")
     print("=" * 40)
     
     success = True
     
-    # Create directories
+    
     print("\n1. Creating directories...")
     create_directories()
     
-    # Create .env file
+   
     print("\n2. Setting up environment file...")
     if not create_env_file():
         success = False
     
-    # Check dependencies
     print("\n3. Checking dependencies...")
     if not check_dependencies():
         success = False
     
-    # Test imports
+    
     print("\n4. Testing module imports...")
     if not test_imports():
         success = False
     
-    # Validate configuration
+    
     print("\n5. Validating configuration...")
     if not validate_config():
         success = False
