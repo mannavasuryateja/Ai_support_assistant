@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""
-AI-Powered Support Assistant with Endee Vector Database
-Main application entry point
-"""
 
 import uvicorn
 from fastapi import FastAPI, Request
@@ -10,24 +6,25 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+logging.getLogger("src.vector_store.endee_client").setLevel(logging.DEBUG)
 import sys
 import os
 
-# Add src to path
+
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
 from src.api.routes import router
 from src.support_assistant import SupportAssistant
 from config import config
 
-# Configure logging
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-# Create FastAPI application
+
 app = FastAPI(
     title="AI Support Assistant with Endee",
     description="Intelligent customer support using Endee vector database for semantic search",
@@ -36,7 +33,7 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# Add CORS middleware
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -45,7 +42,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include API routes
+
 app.include_router(router, prefix="/api/v1", tags=["Support Assistant"])
 
 # Global assistant instance
@@ -53,7 +50,7 @@ assistant = None
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize the support assistant on startup."""
+    
     global assistant
     logger.info("🚀 Starting AI Support Assistant...")
     
